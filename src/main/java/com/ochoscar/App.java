@@ -1,25 +1,17 @@
 package com.ochoscar;
 
-import org.apache.commons.io.FileUtils;
-
-import java.io.File;
-import java.io.FilenameFilter;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Stream;
+import com.ochoscar.operations.CopyFiles;
+import com.ochoscar.operations.DeleteFiles;
+import com.ochoscar.operations.DeleteIncomplete;
 
 /**
- * Programa para realizar operaciones comunes con archivos
+ * Common operations with files
  * @author ochoscar
  */
 public class App {
 
     public static void main(String[] args) {
-        // Valida los parametros
+        // Recover params from command line
         String operation = "";
         boolean argsError = false;
         if(args.length > 0) {
@@ -32,59 +24,24 @@ public class App {
         }
 
         if(argsError) {
-            System.out.println("Usage: java -jar <operation>\nFor operation copy you need pass source and destination folder");
+            System.out.println("Usage: java -jar <operation> <path>");
+            System.out.println("For operation copy you need pass source folder");
+            System.out.println("For operation delete you need pass source folder");
         }
 
-        // En caso que no haya habido error procesa la solicitud
         if(operation.equals("copy")) {
-            // Obtiene la lista de directorios a procesar
-            String source = args[1];
-            //String destination = args[2];
-            // Listar las carpetas de la ruta de origen
-            File file = new File(source);
-            String[] directories = file.list(new FilenameFilter() {
-                @Override
-                public boolean accept(File current, String name) {
-                    return new File(current, name).isDirectory();
-                }
-            });
-            List<String> dirs = Arrays.asList(directories);
-            Collections.sort(dirs);
-
-            // Por cada directorio verifica si el mismo tiene archivos completos y no este vacío para armar otra lista
-            List<String> filesToMove = new ArrayList<>();
-            dirs.stream().forEach(dir -> {
-                File filesPath = new File(source + "/" +  dir);
-                String[] files = filesPath.list(new FilenameFilter() {
-                    @Override
-                    public boolean accept(File current, String name) {
-                        return new File(current, name).isFile();
-                    }
-                });
-                if(files != null && files.length > 0) {
-                    //List<String> arrayFiles = Arrays.asList(files);
-                    // Solo agrega las rutas que no terminan en .part
-                    //if( arrayFiles.size() > 0 && arrayFiles.stream().allMatch(f -> !f.endsWith(".part"))  ) {
-                    for(String strFile : files) {
-                        filesToMove.add(source + "/" + dir + "/" + strFile);
-                        System.out.println("Added file to processing: " + source + "/" + dir + "/" + strFile);
-                    }
-                }
-            });
-
-            // Mueve los directorios marcados de a la carpeta destino
-            for(String forMove : filesToMove) {
-                System.out.println("Moving: " + forMove + " ... to " + source + "/" + forMove.substring(forMove.lastIndexOf("/") + 1));
-                try {
-                    FileUtils.moveFile(new File(forMove), new File(source + "/" + forMove.substring(forMove.lastIndexOf("/") + 1)));
-                } catch (Exception ex) {
-                    System.out.println("Ha ocurrido un error moviendo un archivo");
-                    ex.printStackTrace();
-                }
-            }
-
+            System.out.println("************************************");
+            System.out.println("Starting copy operation");
+            CopyFiles.execute(args);
+        } else if(operation.equals("delete")) {
+            System.out.println("************************************");
+            System.out.println("Starting delete operation");
+            DeleteFiles.execute(args);
+        } else if(operation.equals("delete_incomplete")) {
+            System.out.println("************************************");
+            System.out.println("Starting delete incomplete operation");
+            DeleteIncomplete.execute(args);
         }
-
     }
 
 }
