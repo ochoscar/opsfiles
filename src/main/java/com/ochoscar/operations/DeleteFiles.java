@@ -75,7 +75,7 @@ public class DeleteFiles {
                 File deleteFile = new File(forDelete);
                 size += deleteFile.length();
                 count++;
-                //FileUtils.forceDelete(deleteFile);
+                FileUtils.forceDelete(deleteFile);
             } catch (Exception ex) {
                 System.out.println("Error deleting file");
                 ex.printStackTrace();
