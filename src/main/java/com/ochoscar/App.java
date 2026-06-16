@@ -3,6 +3,7 @@ package com.ochoscar;
 import com.ochoscar.operations.CopyFiles;
 import com.ochoscar.operations.DeleteFiles;
 import com.ochoscar.operations.DeleteIncomplete;
+import com.ochoscar.operations.similarity.VideoDuplicateFinder;
 
 /**
  * Common operations with files
@@ -11,37 +12,56 @@ import com.ochoscar.operations.DeleteIncomplete;
 public class App {
 
     public static void main(String[] args) {
-        // Recover params from command line
-        String operation = "";
-        boolean argsError = false;
-        if(args.length > 0) {
-            operation = args[0];
-            if(operation.equals("copy") && args.length != 2) {
-                argsError = true;
+        if (args.length < 2) {
+            printUsage();
+            return;
+        }
+
+        String operation = args[0];
+
+        System.out.println("************************************");
+
+        switch (operation) {
+            case "copy" -> {
+                System.out.println("Starting copy operation");
+                CopyFiles.execute(args);
             }
-        } else {
-            argsError = true;
-        }
-
-        if(argsError) {
-            System.out.println("Usage: java -jar <operation> <path>");
-            System.out.println("For operation copy you need pass source folder");
-            System.out.println("For operation delete you need pass source folder");
-        }
-
-        if(operation.equals("copy")) {
-            System.out.println("************************************");
-            System.out.println("Starting copy operation");
-            CopyFiles.execute(args);
-        } else if(operation.equals("delete")) {
-            System.out.println("************************************");
-            System.out.println("Starting delete operation");
-            DeleteFiles.execute(args);
-        } else if(operation.equals("delete_incomplete")) {
-            System.out.println("************************************");
-            System.out.println("Starting delete incomplete operation");
-            DeleteIncomplete.execute(args);
+            case "delete" -> {
+                System.out.println("Starting delete operation");
+                DeleteFiles.execute(args);
+            }
+            case "delete_incomplete" -> {
+                System.out.println("Starting delete incomplete operation");
+                DeleteIncomplete.execute(args);
+            }
+            case "similarity" -> {
+                System.out.println("Starting video similarity operation");
+                System.out.println("Requires: ffmpeg and ffprobe in PATH");
+                VideoDuplicateFinder.execute(args);
+            }
+            default -> {
+                System.err.println("Unknown operation: " + operation);
+                printUsage();
+            }
         }
     }
 
+    private static void printUsage() {
+        System.out.println("Usage: java -jar opsfiles.jar <operation> <path>");
+        System.out.println();
+        System.out.println("Operations:");
+        System.out.println("  copy               Move files from subdirectories to the source folder");
+        System.out.println("  delete             Delete duplicate video files based on resolution");
+        System.out.println("  delete_incomplete   Delete incomplete (.part) files");
+        System.out.println("  similarity          Find duplicate and similar videos using visual fingerprints");
+        System.out.println("                      Flags: --exact        also detect byte-identical duplicates via SHA256");
+        System.out.println("                             --threads N    workers for fingerprint extraction (default: min(cores,16))");
+        System.out.println();
+        System.out.println("Examples:");
+        System.out.println("  java -jar opsfiles.jar copy D:/Videos");
+        System.out.println("  java -jar opsfiles.jar delete D:/Videos");
+        System.out.println("  java -jar opsfiles.jar delete_incomplete D:/Videos");
+        System.out.println("  java -jar opsfiles.jar similarity D:/Videos");
+        System.out.println("  java -jar opsfiles.jar similarity D:/Videos --exact");
+    }
 }
