@@ -68,9 +68,13 @@ if ($Operation -eq "similarity") {
 }
 
 # --- Ejecutar ---
+$displayArgs = ($jarArgs | ForEach-Object {
+    if ($_ -match '\s') { '"' + $_ + '"' } else { $_ }
+}) -join ' '
+
 Write-Host ""
 Write-Host "Comando:" -ForegroundColor Cyan
-Write-Host "  java -jar `"$jar`" $($jarArgs | ForEach-Object { if ($_ -match '\s') { "`"$_`"" } else { $_ } })"
+Write-Host "  java -jar `"$jar`" $displayArgs"
 Write-Host ""
 
 java -jar $jar @jarArgs
